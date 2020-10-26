@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}{{ author.username }}{% endblock %}
+{% block content %}
+<main role="main" class="container"></main>
+<div class="row">
+    <div class="col-md-3 mb-3 mt-1">
+        <div class="card">
+            {% include 'includes/author.html' with author=author is_following=is_following subscribers=subscribers is_subscribed=is_subscribed %}
+        </div>
+    </div>
+
+    <div class="col-md-9">
+        {% include "post_item.html" with post=post %}
+        {% include 'comments.html' with comments=comments %}
+    </div>
+</div>
+</main>
+{% endblock %}
