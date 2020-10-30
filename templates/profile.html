@@ -5,16 +5,29 @@
 <div class="row">
     <div class="col-md-3 mb-3 mt-1">
         <div class="card">
-            {% include 'includes/author.html' with author=author is_following=is_following subscribers=subscribers is_subscribed=is_subscribed %}
+            {% include 'includes/author.html' with author=author is_following=is_following %}
+            {% if author.username != request.user.username and request.user.is_authenticated %}
+            <li class="list-group-item">
+                {% if is_following %}
+                <a class="btn btn-lg btn-light" href="{% url 'profile_unfollow' author.username %}" role="button">
+                    Отписаться
+                </a>
+                {% else %}
+                <a class="btn btn-lg btn-primary" href="{% url 'profile_follow' author.username %}" role="button">
+                    Подписаться
+                </a>
+                {% endif %}
+            </li>
+            {% endif %}
         </div>
     </div>
     <div class="col-md-9">
         {% for post in page %}
-            {% include "post_item.html" with post=post %}
+            {% include "includes/post_item.html" with post=post %}
         {% endfor %}
     </div>
         {% if page.has_other_pages %}
-        {% include "paginator.html" with items=page paginator=paginator %}
+        {% include "includes/paginator.html" with items=page paginator=paginator %}
         {% endif %}
 </div>
 </main>

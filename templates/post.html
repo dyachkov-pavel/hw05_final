@@ -5,13 +5,13 @@
 <div class="row">
     <div class="col-md-3 mb-3 mt-1">
         <div class="card">
-            {% include 'includes/author.html' with author=author is_following=is_following subscribers=subscribers is_subscribed=is_subscribed %}
+            {% include 'includes/author.html' with author=author is_following=is_following %}
         </div>
     </div>
 
     <div class="col-md-9">
-        {% include "post_item.html" with post=post %}
-        {% include 'comments.html' with comments=comments %}
+        {% include "includes/post_item.html" with post=post %}
+        {% include 'comments.html' with comments=post.comment.all %}
     </div>
 </div>
 </main>
