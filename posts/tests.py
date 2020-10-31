@@ -158,10 +158,16 @@ class TestViewMethods(TestCase):
         self.assertEqual(Comment.objects.count(), 1)
         comment = Comment.objects.last()
         self.assertEqual(comment, post.comment.first())
+        self.assertEqual(comment.text, 'test_comm')
+        self.assertEqual(comment.author, self.user)
+        self.assertEqual(comment.post, post)
 
-# @override_settings(LOGIN_URL=reverse('index'))
-# Я не понял, что делает override_settins, как он работает
-# и какой агрумент ему передавать
+
+@override_settings(CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+    }
+})
 class TestImg(TestCase):
     def setUp(self):
         self.client = Client()
@@ -177,7 +183,6 @@ class TestImg(TestCase):
         self.assertContains(response, '<img')
 
     def test_img_tag(self):
-        cache.clear()
         post_url = reverse('new_post',)
         img = Image.new('RGB', (60, 30), color='red')
         img.save('red.png')
@@ -189,7 +194,6 @@ class TestImg(TestCase):
                               'group': self.group_1.id}
                              )
         post_with_img = Post.objects.first()
-        self.assertEqual(post_with_img.text, 'post with image')
         urls = [
             reverse('profile', kwargs={'username': self.user.username}),
             reverse('post', 
@@ -215,19 +219,22 @@ class TestImg(TestCase):
                                 'username': self.user.username,
                                 'post_id': post.id}
                                 )
-        fp = tempfile.TemporaryFile()
+        fp = tempfile.TemporaryFile() 
         fp.write(b'Hello world!')
+        fp.seek(0)
         with fp as fake_img:
             response = self.client.post(post_edit_url,
                                         {'author': self.user,
                                          'text': 'post with image',
                                          'image': fake_img,
                                          'group': self.group_1.id}
-                                        )
+                                         )
         self.assertFormError(response, 
                              'form', 
                              'image',
-                             'Отправленный файл пуст.'
+                             'Загрузите правильное изображение. '
+                             'Файл, который вы загрузили, '
+                             'поврежден или не является изображением.'
                              )
 
 
@@ -279,6 +286,12 @@ class TestFollow(TestCase):
         self.client.get(unfollow_url)
         self.assertEqual(Follow.objects.count(), 0)
 
+
+@override_settings(CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+    }
+})
 class TestCache(TestCase):
     def setUp(self):
         self.client = Client()
@@ -298,3 +311,6 @@ class TestCache(TestCase):
                             author=self.user,
                             )
         self.assertNotContains(response, 'banana')
+        cache.clear()
+        new_response = self.client.get(index_url)
+        self.assertContains(new_response, 'banana')

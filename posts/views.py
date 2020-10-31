@@ -71,10 +71,8 @@ def profile(request, username):
 
 
 def post_view(request, username, post_id):
-    author = get_object_or_404(User, username=username)
+    #author = get_object_or_404(User, username=username)
     post = get_object_or_404(Post, id=post_id, author__username=username)
-    is_following = (request.user.is_authenticated and 
-                    Follow.objects.filter(user=request.user, author=author).exists())
     form = CommentForm(request.POST or None)
     if form.is_valid():
         comment = form.save(commit=False)
@@ -88,7 +86,6 @@ def post_view(request, username, post_id):
                       'author': post.author,
                       'post': post,
                       'form': form,
-                      'is_following': is_following
                   }
                   )
 
@@ -141,8 +138,7 @@ def server_error(request):
 
 @login_required
 def follow_index(request):
-    main_user = get_object_or_404(User, username=request.user)
-    post_list = Post.objects.filter(author__in=main_user.follower.all().values('author'))
+    post_list = Post.objects.filter(author__following__user=request.user)
     paginator = Paginator(post_list, 10)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
@@ -158,12 +154,11 @@ def follow_index(request):
 
 @login_required
 def profile_follow(request, username):
-    main_user = request.user
     to_follow = get_object_or_404(User, username=username)
-    if (username == main_user.username or 
-        Follow.objects.filter(user=main_user, author=to_follow).exists()):
+    if (to_follow == request.user or 
+        Follow.objects.filter(user=request.user, author=to_follow).exists()):
         return redirect('profile', username=username)
-    Follow.objects.create(user=main_user, author=to_follow)
+    Follow.objects.create(user=request.user, author=to_follow)
     return redirect('profile', username=username)
 
 

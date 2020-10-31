@@ -9,13 +9,8 @@
 <div class="row justify-content-center">
     <div class="col-md-8 p-5">
         <div class="card">
-            {% if update %}
-            <div class="card-header">Обновить запись</div>
-            {% else %}
-            <div class="card-header">Новая запись</div>
-            {%endif %}
+            <div class="card-header">{% if update %}Обновить запись{% else %}Новая запись{% endif %}</div>
             <div class="card-body">
-
                 {% for error in form.errors %}
                 <div class="alert alert-danger" role="alert">
                     {{ error|escape }}
